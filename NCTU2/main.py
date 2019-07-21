@@ -1,38 +1,54 @@
-import dataloader as data
-import numpy as np
-import os
-import torch.nn as nn
+import Process as Proc
+import plot
+import os 
+import matplotlib.pyplot as plt
 
-def hello():
-    print('hello')
-def ioio():
-    print('ioio')
-def kf():
-    print('kfjdk')
+if __name__ == '__main__':
+    
+    ##. Hyper Parameter
+    Criteria = {
+        'data_path' : './lab2',
+        'Batch_size' : 128,
+        'Learning_rate' : 1e-2,
+        'Epochs' : 150,
+        'activation': ['LeakyReLU','ReLU','ELU'],
+        'model' : ['EEGNet', 'DeepConvNet'],
+        'current_path' : '/tmp/DL-Prac-2019-summer/NCTU2'
+    }
 
-option = {'data_path' : './lab2',
-          'Batch_size' : 64,
-          'Learning_rate' : 1e-2,
-          'Epochs' : 150,
-          'activation': ['nn.LeakyReLU()','nn.ReLU()','nn.ELU()'],
-          'ac': ['hello()','ioio()','kf()'],
-          #'aec': [hello(),ioio(),kf()],
-          #'hello' : 'hello()',
-          #'ioio' : ioio()
 
-         }
+    print(Criteria['Learning_rate'])
+    for model in range(2):
+        for act in range(3):
+            os.chdir(Criteria['current_path'])
+            model_name = Criteria['model'][model]
+            print(model_name)
+            Proc.Process(model = model_name, 
+                activation = Criteria['activation'][act], 
+                batch_size = Criteria['Batch_size'], 
+                epoch = Criteria['Epochs'], 
+                Learning_rate = Criteria['Learning_rate'])
 
-# Read file
-#data.read_bci_data(option['data_path'])
-#func = option['ac']
-func = hello()
 
-#func
-#print(option['cool'][0])
+fig1 = plt.figure(figsize=(10,12))
+os.chdir(Criteria['current_path'])
+model_name = Criteria['model'][0]
+plot.PlotComp(path = './'+ model_name, model_name = model_name, epoch = Criteria['Epochs'],figure = fig1)
+#fig1.savefig(model_name + '.png')
+plt.show()
 
-# pytorch optional activation in dict方式 , 用下載下來的嘗試 optional 方式
-#nn.LeakyReLU()
-#nn.ReLU()
-#nn.ELU()
+'''
+fig2 = plt.figure(figsize=(10,12))
+os.chdir(Criteria['current_path'])
+model_name = Criteria['model'][1]
+plot.PlotComp(path = './'+ model_name, model_name = model_name, epoch = Criteria['Epochs'],figure = fig2)
+fig2.savefig(model_name + '.png')
 
-# 求出檔案 在畫圖
+'''
+
+
+
+
+
+
+

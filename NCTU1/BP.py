@@ -2,7 +2,7 @@ import numpy as np
 import func as f
 
 class BP:
-    def __init__(self, train_x, train_y, n_iter = 10000, learning_rate = 0.05):
+    def __init__(self, train_x, train_y, n_iter = 50000, learning_rate = 0.05):
         self.iter = n_iter
         self.lr = learning_rate
         self.x = train_x # no bias
@@ -37,14 +37,14 @@ class BP:
         E = self.y - self.res
         errors = np.sum(np.square(E)) 
         # Calculate the dirivative
-        delta_res = 2 * E * f.derivative_sigmoid(self.res)
+        delta_res = -2 * E * f.derivative_sigmoid(self.res)
         delta_h2 = f.derivative_sigmoid(self.h2) * np.dot(delta_res, self.w3.T)
         delta_h1 = f.derivative_sigmoid(self.h1) * np.dot(delta_h2, self.w2.T)
         # update the coefficient
         # 取 transpose
-        self.w3 += self.lr * self.h2.T.dot(delta_res)
-        self.w2 += self.lr * self.h1.T.dot(delta_h2)
-        self.w1 += self.lr * self.x.T.dot(delta_h1)
+        self.w3 -= self.lr * self.h2.T.dot(delta_res)
+        self.w2 -= self.lr * self.h1.T.dot(delta_h2)
+        self.w1 -= self.lr * self.x.T.dot(delta_h1)
 
         return errors
 
@@ -54,7 +54,7 @@ class BP:
             self.predict(self.x, self.y)
             self.error = self.backp()
             self.cost.append(self.error)
-            if (iter % 1000 == 0):
+            if (iter % 5000 == 0):
                 print("Accuracy : {}%, loss : {}".format(self.acc, self.error))
             #if (self.acc >= 97.0):
              #   return self
