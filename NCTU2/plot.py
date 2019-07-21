@@ -7,13 +7,16 @@ import os
 
 def PlotComp(path, model_name,epoch,figure):
     color = ['b-','g-','r-','c-','m-','y-']
+    #figure = plt.axes()
     for dirPath, dirNames, fileNames in os.walk(path):
         os.chdir(path)
         index_color = 0
         for file in fileNames:
             if file == '.DS_Store':
                 continue
-            with open(file, newline='') as csvFile:
+            if '.png' in file:
+                continue
+            with open(file, encoding="utf8", errors='ignore', newline='') as csvFile:
                 #lines = len(open(file) .readlines()) 
                 label = file.replace('.csv','')
                 data = np.zeros((epoch,2))
@@ -35,19 +38,3 @@ def PlotComp(path, model_name,epoch,figure):
         plt.legend()
 
 
-PlotComp('./EEGNet', 'EEGNet',10)
-
-fig1 = plt.figure(figsize=(10,12))
-os.chdir(Criteria['current_path'])
-model_name = Criteria['model'][0]
-PlotComp(path = './'+ model_name, model_name = model_name, epoch = Criteria['Epochs'],figure = fig1)
-#fig1.savefig(model_name + '.png')
-
-
-fig2 = plt.figure(figsize=(10,12))
-os.chdir(Criteria['current_path'])
-model_name = Criteria['model'][1]
-plot.PlotComp(path = './'+ model_name, model_name = model_name, epoch = Criteria['Epochs'],figure = fig2)
-#fig2.savefig(model_name + '.png')
-
-#plt.show()
