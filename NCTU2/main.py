@@ -30,22 +30,6 @@ if __name__ == '__main__':
                 Learning_rate = Criteria['Learning_rate'])
 
 
-fig1 = plt.figure(figsize=(10,12))
-os.chdir(Criteria['current_path'])
-model_name = Criteria['model'][0]
-plot.PlotComp(path = './'+ model_name, model_name = model_name, epoch = Criteria['Epochs'],figure = fig1)
-#fig1.savefig(model_name + '.png')
-plt.show()
-
-'''
-fig2 = plt.figure(figsize=(10,12))
-os.chdir(Criteria['current_path'])
-model_name = Criteria['model'][1]
-plot.PlotComp(path = './'+ model_name, model_name = model_name, epoch = Criteria['Epochs'],figure = fig2)
-fig2.savefig(model_name + '.png')
-
-'''
-
 
 
 
