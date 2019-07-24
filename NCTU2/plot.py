@@ -12,20 +12,20 @@ def PlotComp(path, model_name,epoch,figure):
         os.chdir(path)
         index_color = 0
         for file in fileNames:
-            if file == '.DS_Store':
-                continue
-            if '.png' in file:
+            if not '.csv' in file:
+                print(file)
                 continue
             with open(file, encoding="utf8", errors='ignore', newline='') as csvFile:
                 #lines = len(open(file) .readlines()) 
                 label = file.replace('.csv','')
-                data = np.zeros((epoch,2))
+                data = np.zeros((epoch,2), dtype = float)
                 rows = csv.reader(csvFile, delimiter=',')
                 index = 0
                 #print(file)
                 for row in rows:
-                    data[index][0] = row[0]
-                    data[index][1] = row[1]
+                    #row =  [float(i) for i in row1]
+                    data[index][0] = float(row[0])
+                    data[index][1] = float(row[1])
                     index += 1
                 plt.plot(data[:,0],data[:,1],color[index_color],label = label)
             index_color = index_color + 1
@@ -37,4 +37,6 @@ def PlotComp(path, model_name,epoch,figure):
         plt.xlim(0, epoch) #epoch
         plt.legend()
 
-
+#model_name = 'EEGNet'
+#fig1 = plt.figure(figsize=(10,12))
+#PlotComp(path = './'+ model_name, model_name = model_name, epoch = 3,figure = fig1)
