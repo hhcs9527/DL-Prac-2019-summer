@@ -28,6 +28,7 @@ class BP:
         self.h1 = f.sigmoid(np.dot(self.x, self.w1))
         self.h2 = f.sigmoid(np.dot(self.h1, self.w2))
         self.res = f.sigmoid(np.dot(self.h2, self.w3))
+        print(self.res.shape)
         self.pred_y = np.where(self.res >= 0.5, 1, 0)
         self.acc = (self.y.shape[0] - abs(self.y - self.pred_y).sum()) / self.y.shape[0] * 100.0
 
