@@ -124,7 +124,7 @@ def timeSince(since, percent):
 
 
 
-def trainIters(encoder, decoder, n_iters, print_every=50, plot_every=10, learning_rate=0.01):
+def trainIters(encoder, decoder, n_iters, epoch, print_every=5, plot_every=10, learning_rate=0.005):
     start = time.time()
     plot_losses = []
     print_loss_total = 0  # Reset every print_every
@@ -135,35 +135,38 @@ def trainIters(encoder, decoder, n_iters, print_every=50, plot_every=10, learnin
     encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
     decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
 
-    #Choose index instead of real word
-    #choose_index = [tensorsFromPair(condition_lang,randrange(len(lines))%4) for i in range(n_iters)]
-    choose_index = [randrange(len(lines)) for i in range(n_iters)]
-    training_pairs = [tensorsFromPair(input_lang,lines[i]) for i in choose_index]
-    criterion = nn.MSELoss()#nn.CrossEntropyLoss()#nn.MSELoss()
-    #criterion = nn.CrossEntropyLoss()
-    #criterion = nn.BCELoss()
 
-    for iter in range(1, n_iters + 1):
-        print_loss_total = 0
-        plot_loss_total = 0
-        training_pair = training_pairs[iter - 1]
-        cond = torch.tensor(choose_index[iter - 1]%4, dtype = torch.long)
-        input_tensor = training_pair
-        #print(input_tensor)
-        loss, input_word, predict_word = train(input_tensor, encoder,decoder, encoder_optimizer, decoder_optimizer, criterion, cond = cond, input_lang = input_lang)
 
-        print_loss_total += loss
-        plot_loss_total += loss
+    for i in range(epoch):
+        #Choose index instead of real word
+        #choose_index = [tensorsFromPair(condition_lang,randrange(len(lines))%4) for i in range(n_iters)]
+        for j in range(int(len(lines)/n_iters)):
+            choose_index = [randrange(len(lines)) for i in range(n_iters)]
+            training_pairs = [tensorsFromPair(input_lang,lines[i]) for i in choose_index]
+            criterion = nn.MSELoss()#nn.CrossEntropyLoss()#nn.MSELoss()
+            #criterion = nn.CrossEntropyLoss()
+            #criterion = nn.BCELoss()
+            for iter in range(1, n_iters + 1):
+                print_loss_total = 0
+                plot_loss_total = 0
+                training_pair = training_pairs[iter - 1]
+                cond = torch.tensor(choose_index[iter - 1]%4, dtype = torch.long)
+                input_tensor = training_pair
+                #print(input_tensor)
+                loss, input_word, predict_word = train(input_tensor, encoder,decoder, encoder_optimizer, decoder_optimizer, criterion, cond = cond, input_lang = input_lang)
 
-        if iter % print_every == 0:
-            print_loss_avg = print_loss_total / print_every
-            KLD_weight = (iter % 10 /10) 
-            #'{} is {} years old.'.format("James", 5)
-            #msg = '{} ({} {}) {:.3f}'.format(timeSince(start, iter / n_iters), iter, iter / n_iters * 100, print_loss_avg)
-            #print('{} ({} {}) {:.4f}'.format(timeSince(start, iter / n_iters), iter, iter / n_iters * 100, print_loss_avg))
-            msg = 'iter : {:.2f}%  Loss_avg : {:.5f}'.format(iter / n_iters * 100, print_loss_avg)
-            print_loss_total = 0
-            plot_loss_total = 0
-            print(msg)
-            print('input_word is : ',input_word)
-            print('predict_word is : ',predict_word)
+                print_loss_total += loss
+                plot_loss_total += loss
+
+                if iter % print_every == 0:
+                    print_loss_avg = print_loss_total / print_every
+                    KLD_weight = (iter % 10 /10) 
+                    #'{} is {} years old.'.format("James", 5)
+                    #msg = '{} ({} {}) {:.3f}'.format(timeSince(start, iter / n_iters), iter, iter / n_iters * 100, print_loss_avg)
+                    #print('{} ({} {}) {:.4f}'.format(timeSince(start, iter / n_iters), iter, iter / n_iters * 100, print_loss_avg))
+                    msg = '# epoch : {} iter : {:.2f}%  Loss_avg : {:.5f}'.format(i,iter / n_iters * 100, print_loss_avg)
+                    print_loss_total = 0
+                    plot_loss_total = 0
+                    print(msg)
+                    print('input_word is : ',input_word)
+                    print('predict_wo is : ',predict_word)

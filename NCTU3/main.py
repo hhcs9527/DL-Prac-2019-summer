@@ -11,4 +11,4 @@ if __name__ == '__main__':
     vocab_size = 28
     encoder1 = EncoderRNN(vocab_size, hidden_size).to(device)
     decoder1 = DecoderRNN(hidden_size + 10, vocab_size).to(device)
-    T.trainIters(encoder1, decoder1, 5000)
+    T.trainIters(encoder1, decoder1, 50, epoch = 50)
