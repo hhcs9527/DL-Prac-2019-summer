@@ -730,7 +730,7 @@ purport purports purporting purported
 purse purses pursing pursed
 pursue pursues pursuing pursued
 push pushes pushing pushed
-input inputs inputting inputted inputted
+input inputs inputting inputted 
 puzzle puzzles puzzling puzzled
 disqualify disqualifies disqualifying disqualified
 quarrel quarrels quarrelling quarrelled
@@ -1092,7 +1092,7 @@ outsell outsells outselling outsold
 send sends sending sent
 outshine outshines outshining outshone
 shut shuts shutting shut
-countersink countersinks countersinking countersank countersunk
+countersink countersinks countersinking countersunk
 oversleep oversleeps oversleeping overslept
 backslide backslides backsliding backslid
 misspend misspends misspending misspent
@@ -1109,7 +1109,7 @@ teach teaches teaching taught
 tear tears tearing tore
 radio telephone radio telephones
 foretell foretells foretelling foretold
-bethink bethinks bethinking bethought bethought
+bethink bethinks bethinking bethought 
 overthrow overthrows overthrowing overthrew
 thrust thrusts thrusting thrust
 undergo undergoes undergoing underwent
@@ -1217,7 +1217,7 @@ faze fazes fazing fazed
 fatten fattens fattening fattened
 expiate expiates expiating expiated
 exonerate exonerates exonerating exonerated
-exit exits exiting exited
+exit  exits exiting exited
 exist exists existing existed
 exile exiles exiling exiled
 exhort exhorts exhorting exhorted

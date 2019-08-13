@@ -17,6 +17,7 @@ class EncoderRNN(nn.Module):
         self.embedding = nn.Embedding(input_size, hidden_size)
         self.gru = nn.GRU(hidden_size, hidden_size)
         # For the decoder 
+        self.linear = nn.Linear(hidden_size, hidden_size) 
         self.linearmu = nn.Linear(hidden_size, hidden_size) 
         self.linearlogvar = nn.Linear(hidden_size, hidden_size) 
         self.embeddingcond = nn.Embedding(4, 10)
@@ -25,6 +26,7 @@ class EncoderRNN(nn.Module):
         embedded = self.embedding(input).view(1, 1, -1)
         output = embedded
         output, hidden = self.gru(output, hidden)
+        hidden = self.linear(hidden)
         # Reparprint Part -> output of the Encoder
         mu = self.linearmu(output)
         logvar = self.linearlogvar(output)
@@ -41,7 +43,7 @@ class DecoderRNN(nn.Module):
     def __init__(self, hidden_size, output_size):
         super(DecoderRNN, self).__init__()
         self.hidden_size = hidden_size
-
+        self.linear = nn.Linear(hidden_size,hidden_size)
         self.embedding = nn.Embedding(output_size, hidden_size)
         self.gru = nn.GRU(hidden_size, hidden_size)
         self.out = nn.Linear(hidden_size, output_size)
@@ -50,13 +52,19 @@ class DecoderRNN(nn.Module):
         #self.lin = nn.Linear(output_size,1)
 
     def forward(self, input, hidden):
+        #print('input : ',input)
+        #print(hidden)
         output = self.embedding(input).view(1, 1, -1)
+        #print(output.size())
+        #output = self.linear(output)#torch.tensor(output, dtype = torch.float32))
         output = F.relu(output)
+        output = self.linear(output)
         output, hidden = self.gru(output, hidden)
-        output = self.softmax(self.out(output[0]))
-        output = torch.argmax(self.softmax2(output))
-        output = torch.tensor(output, dtype = torch.float32)
-        return output, hidden
+        hidden = self.linear(hidden)
+        predict = self.softmax(self.out(output[0]))
+        output = torch.argmax(self.softmax2(predict))
+        output = torch.tensor(output, dtype = torch.long)
+        return output, hidden, predict
 
     def initHidden(self):
         return torch.zeros(1, 1, self.hidden_size , device=device)
