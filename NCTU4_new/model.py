@@ -8,14 +8,15 @@ class FrontEnd(nn.Module):
     super(FrontEnd, self).__init__()
 
     self.main = nn.Sequential(
+
       nn.Conv2d(1, 64, 4, 2, 1),
-      nn.LeakyReLU(0.1, inplace=True),
+      #nn.LeakyReLU(0.1, inplace=True),
       nn.Conv2d(64, 128, 4, 2, 1, bias=False),
       nn.BatchNorm2d(128),
-      nn.LeakyReLU(0.1, inplace=True),
+      #nn.LeakyReLU(0.1, inplace=True),
       nn.Conv2d(128, 1024, 7, bias=False),
       nn.BatchNorm2d(1024),
-      nn.LeakyReLU(0.1, inplace=True),
+      #nn.LeakyReLU(0.1, inplace=True),
     )
 
   def forward(self, x):
@@ -35,30 +36,31 @@ class D(nn.Module):
       )
     else:
       self.main = nn.Sequential(
-        # input is (nc) x 64 x 64
-        nn.Conv2d(1024, 64, 4, 2, 1, bias=False),
-        nn.LeakyReLU(0.2, inplace=True),
+        # input 100 1024, 1, 1
+        nn.Conv2d(1024, 64, 1, 4, 1, bias=False),
+        nn.ReLU(),#nn.LeakyReLU(0.2, inplace=True),
         # state size. 100, 64, 1, 1
-        nn.Conv2d(64, 64 * 2, 4, 2, 1, bias=False),
+        nn.Conv2d(64, 64 * 2, 1, 4, 1, bias=False),
         nn.BatchNorm2d(64 * 2),
-        nn.LeakyReLU(0.2, inplace=True),
+        #nn.ReLU(),#nn.LeakyReLU(0.2, inplace=True),
         # state size. 100, 128, 1, 1
-        nn.Conv2d(64 * 2, 64 * 4, 4, 2, 1, bias=False),
+        nn.Conv2d(64 * 2, 64 * 4, 1, 4, 1, bias=False),
         nn.BatchNorm2d(64 * 4),
-        nn.LeakyReLU(0.2, inplace=True),
+        #nn.ReLU(),##nn.LeakyReLU(0.2, inplace=True),
         # state size. 100, 256, 1, 1
-        nn.Conv2d(64 * 4, 64 * 8, 4, 2, 1, bias=False),
+        nn.Conv2d(64 * 4, 64 * 8, 1, 4, 1, bias=False),
         nn.BatchNorm2d(64 * 8),
         # state size. 100, 512, 1, 1
-        nn.Conv2d(64 * 8, 1, 4, 2, 1, bias=False),
+        nn.Conv2d(64 * 8, 1, 1, 4, 1, bias=False),
         nn.Sigmoid()
+        # state size. 100, 1, 1, 1
       )
-      # kernel = 4, stride = 2, pad = 1 -> maintain the size
+# Note :
+# W after conv2d = floor((wide-kernel_size + 2 * padding)/stride) + 1
 #####
 
   def forward(self, x):
     output = self.main(x).view(-1, 1)
-    print('after D size : ', self.main(x).size())
     return output
 
 
@@ -77,9 +79,9 @@ class Q(nn.Module):
   def forward(self, x):
 
     y = self.conv(x)
-    print('y : ',y.size())
+    #print('y : ',y.size())
     disc_logits = self.conv_disc(y).squeeze()
-    print('disc_logits : ',disc_logits.size())
+    #print('disc_logits : ',disc_logits.size())
     mu = self.conv_mu(y).squeeze()
     var = self.conv_var(y).squeeze().exp()
 
@@ -94,12 +96,12 @@ class G(nn.Module):
     if not Change:
       self.main = nn.Sequential(
       # state size. 100, 74, 1, 1
-        nn.ConvTranspose2d(74, 1024, 1, 1, bias=False),
-        nn.BatchNorm2d(1024),
-        nn.ReLU(True),
+      nn.ConvTranspose2d(74, 1024, 1, 1, bias=False),
+      nn.BatchNorm2d(1024),
+      nn.ReLU(True),
       # state size. 100, 1024, 1, 1
       nn.ConvTranspose2d(1024, 128, 7, 1, bias=False),
-      nn.BatchNorm2d(128),
+      #nn.BatchNorm2d(128),
       nn.ReLU(True),
       # state size. 100, 128, 7, 7
       nn.ConvTranspose2d(128, 64, 4, 2, 1, bias=False),
@@ -111,48 +113,38 @@ class G(nn.Module):
       # state size. 100, 1, 28, 28
       )
 
+
     # Substitute Generator of DCGAN here
     else:
       self.main = nn.Sequential(
         # state size. 100, 74, 1, 1
-        nn.ConvTranspose2d(74, 64 * 8, 4, 1, 1, bias=False),
-        nn.BatchNorm2d(64 * 8),
+        nn.ConvTranspose2d(74, 64 * 8, 3, 2, 1, bias=False),
+        #nn.BatchNorm2d(64 * 8),
         nn.ReLU(True),
-        # state size. 100, 512, 2, 2
-        nn.ConvTranspose2d(64 * 8, 64 * 4, 2, 2, 1, bias=False),
-        nn.BatchNorm2d(64 * 4),
+        # state size. 100, 512, 1, 1
+        nn.ConvTranspose2d(64 * 8, 64 * 4, 4, 2, 1, bias=False),
+        #nn.BatchNorm2d(64 * 4),
         nn.ReLU(True),
         # state size. 100, 256, 2, 2
-        nn.ConvTranspose2d(64 * 8, 64 * 4, 4, 1, 1, bias=False),
-        nn.BatchNorm2d(64 * 4),
+        nn.ConvTranspose2d(64 * 4, 64 * 2, 8, 1, 1, bias=False),
+        #nn.BatchNorm2d(64 * 2),
         nn.ReLU(True),
-      )
-      self.main1 = nn.Sequential(
-        # state size. 100, 512, 4, 4
-        nn.ConvTranspose2d(64 * 8, 64 * 4, 4, 2, 1, bias=False),
-        nn.BatchNorm2d(64 * 4),
-        nn.ReLU(True),
-        # state size. 100, 256, 8, 8
-        nn.ConvTranspose2d(64 * 4, 64 * 2, 4, 2, 1, bias=False),
-        nn.BatchNorm2d(64 * 2),
-        nn.ReLU(True),
-        # state size. (64*4) x 8 x 8
-
-        # state size. (64*2) x 16 x 16
+        # state size. 100, 128, 7, 7
         nn.ConvTranspose2d(64 * 2, 64, 4, 2, 1, bias=False),
-        nn.BatchNorm2d(64),
+        #nn.BatchNorm2d(64),
         nn.ReLU(True),
-        # state size. (64) x 32 x 32
+        # state size. 100, 64, 14, 14
         nn.ConvTranspose2d(64, 1, 4, 2, 1, bias=False),
-        nn.Tanh()
-        # state size. (1) x 64 x 64 -> generate a grey scale picture
-    )
+        #nn.Sigmoid()
+        #nn.Tanh()
+        # state size. (1) x 28 x 28 -> generate a grey scale picture
+      )
   ######
 
   def forward(self, x):
-    print('x size : ', x.size())
+    #print('x size : ', x.size())
     output = self.main(x)
-    print('gen size : ',output.size())
+    #print('gen size : ',output.size())
     return output
 
 def weights_init(m):
@@ -161,4 +153,7 @@ def weights_init(m):
         m.weight.data.normal_(0.0, 0.02)
     elif classname.find('BatchNorm') != -1:
         m.weight.data.normal_(1.0, 0.02)
+
         m.bias.data.fill_(0)
+
+

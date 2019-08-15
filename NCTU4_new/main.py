@@ -1,15 +1,23 @@
 from model import *
 from trainer import Trainer
-
+from test import test
 
 fe = FrontEnd()
 d = D()
 q = Q()
 g = G()
 
-for i in [fe, d, q, g]:
-  #i.cuda()
-  i.apply(weights_init)
+train = False
+train = True
 
-trainer = Trainer(g, fe, d, q)
-trainer.train()
+if train == True:
+  for i in [fe, d, q, g]:
+    i.cuda()
+    i.apply(weights_init)
+
+  trainer = Trainer(g, fe, d, q)
+  trainer.train()
+
+else:
+  gotest = test(g, fe, d, q)
+  gotest.testing()

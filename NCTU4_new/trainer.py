@@ -15,7 +15,6 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class log_gaussian:
 
   def __call__(self, x, mu, var):
-
     logli = -0.5*(var.mul(2*np.pi)+1e-6).log() - \
             (x-mu).pow(2).div(var.mul(2.0)+1e-6)
     
@@ -25,13 +24,13 @@ class Trainer:
 
   def __init__(self, G, FE, D, Q):
 
-    self.G = G
     self.FE = FE
-    self.D = D
-    self.Q = Q
+    self.G = G  #self.load_w(G,'G')
+    self.D = D  #self.load_w(D,'D')
+    self.Q = Q  #self.load_w(Q,'Q')
 
     self.batch_size = 100
-
+  
   def _noise_sample(self, dis_c, con_c, noise, bs):
 
     idx = np.random.randint(10, size=bs)
@@ -45,29 +44,37 @@ class Trainer:
 
     return z, idx
 
-  def train(self):
 
-    real_x = torch.FloatTensor(self.batch_size, 1, 28, 28, device = device)
-    label = torch.FloatTensor(self.batch_size, 1, device = device)
-    dis_c = torch.FloatTensor(self.batch_size, 10, device = device)
-    con_c = torch.FloatTensor(self.batch_size, 2, device = device)
-    noise = torch.FloatTensor(self.batch_size, 62, device = device)
+  def get_path(self, name):
+    return name + '.pt'
+  
+
+  def setup(self):
+    real_x = torch.FloatTensor(self.batch_size, 1, 28, 28).to(device)
+    label = torch.FloatTensor(self.batch_size, 1).to(device)
+    dis_c = torch.FloatTensor(self.batch_size, 10).to(device)
+    con_c = torch.FloatTensor(self.batch_size, 2).to(device)
+    noise = torch.FloatTensor(self.batch_size, 62).to(device) 
 
     real_x = Variable(real_x)
     label = Variable(label, requires_grad=False)
     dis_c = Variable(dis_c)
     con_c = Variable(con_c)
     noise = Variable(noise)
+    return real_x, label, dis_c, con_c, noise
+
+  def train(self):
+    real_x, label, dis_c, con_c, noise = self.setup()
 
     criterionD = nn.BCELoss()
     criterionQ_dis = nn.CrossEntropyLoss()
     criterionQ_con = log_gaussian()
 
-    optimD = optim.Adam([{'params':self.FE.parameters()}, {'params':self.D.parameters()}], lr=0.0002, betas=(0.5, 0.99))
+    optimD = optim.Adam([{'params':self.FE.parameters()}, {'params':self.D.parameters()}], lr=0.001, betas=(0.5, 0.99))
     optimG = optim.Adam([{'params':self.G.parameters()}, {'params':self.Q.parameters()}], lr=0.001, betas=(0.5, 0.99))
 
     dataset = dset.MNIST('./dataset', transform=transforms.ToTensor(), download=True)
-    dataloader = DataLoader(dataset, batch_size=self.batch_size, shuffle=True, num_workers=1)
+    dataloader = DataLoader(dataset, batch_size=self.batch_size, shuffle=True, num_workers=0)
 
     # fixed random variables
     c = np.linspace(-1, 1, 10).reshape(1, -1)
@@ -82,7 +89,7 @@ class Trainer:
     fix_noise = torch.Tensor(100, 62).uniform_(-1, 1)
 
 
-    for epoch in range(10):
+    for epoch in range(1):
       for num_iters, batch_data in enumerate(dataloader, 0):
 
         # real part
@@ -91,11 +98,12 @@ class Trainer:
         x, _ = batch_data
 
         bs = x.size(0)
-        real_x.data.resize_(x.size())
+        real_x.data.resize_(x.size()) 
         label.data.resize_(bs, 1)
         dis_c.data.resize_(bs, 10)
         con_c.data.resize_(bs, 2)
         noise.data.resize_(bs, 62)
+        
         
         real_x.data.copy_(x)
         fe_out1 = self.FE(real_x)
@@ -127,11 +135,9 @@ class Trainer:
         reconstruct_loss = criterionD(probs_fake, label)
         
         q_logits, q_mu, q_var = self.Q(fe_out)
-        class_ = torch.LongTensor(idx, device = device)
+        class_ = torch.LongTensor(idx).to(device)
         target = Variable(class_)
 
-        print(target.size())
-        print(q_logits.size(), q_mu.size(), q_var.size())
         dis_loss = criterionQ_dis(q_logits, target)
         con_loss = criterionQ_con(con_c, q_mu, q_var)*0.1
         
@@ -142,7 +148,7 @@ class Trainer:
         if num_iters % 100 == 0:
 
           print('Epoch/Iter:{0}/{1}, Dloss: {2}, Gloss: {3}'.format(
-            epoch, num_iters, D_loss.data.cpu().numpy(),
+            epoch+1, num_iters, D_loss.data.cpu().numpy(),
             G_loss.data.cpu().numpy())
           )
 
@@ -152,9 +158,16 @@ class Trainer:
           con_c.data.copy_(torch.from_numpy(c1))
           z = torch.cat([noise, dis_c, con_c], 1).view(-1, 74, 1, 1)
           x_save = self.G(z)
-          save_image(x_save.data, './tmp/c1.png', nrow=10)
+          name = './tmp/c1'+ '#epoch' + str(epoch+1) + '# iter ' + str(num_iters) +'.png'
+          save_image(x_save.data, name, nrow=10)
 
           con_c.data.copy_(torch.from_numpy(c2))
           z = torch.cat([noise, dis_c, con_c], 1).view(-1, 74, 1, 1)
+          name = './tmp/c2'+ '#epoch' + str(epoch+1) + '# iter ' + str(num_iters) +'.png'
           x_save = self.G(z)
-          save_image(x_save.data, './tmp/c2.png', nrow=10)
+          save_image(x_save.data, name, nrow=10)
+          torch.save(self.D.state_dict(), self.get_path('D')) 
+          torch.save(self.G.state_dict(), self.get_path('G'))
+          torch.save(self.Q.state_dict(), self.get_path('Q'))
+
+    torch.cuda.empty_cache()
