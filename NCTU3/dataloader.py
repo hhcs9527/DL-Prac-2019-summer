@@ -22,8 +22,8 @@ class Data:
 
                 # valid tense change
                 for i in range(len(valid_line)):
-                    #for j in range(len(valid_line)):
-                        change_tense = [line[i], line[i],i]
+                    for j in range(len(valid_line)):
+                        change_tense = [line[i], line[j], j]
                         load_data.append(change_tense)
         return load_data
 

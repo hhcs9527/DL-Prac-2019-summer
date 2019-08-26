@@ -75,15 +75,15 @@ class Autoencoder:
                     self.Decoder.train()
 
                     # encode
-                    encoder_output, Encode_hidden, mu, logvar = encoder.DoEncode(self.Encoder, self.hidden_size, 
+                    Encoder_output, mu, logvar = encoder.DoEncode(self.Encoder, self.hidden_size, 
                                                                 self.cond_embed_size, train_case[0], train_case[2])
 
                     # decode
                     predict_word, loss = decoder.DoDecode(self.Decoder, self.hidden_size, self.cond_embed_size, 
-                                                    self.output_size, encoder_output, 
+                                                    self.output_size, Encoder_output, 
                                                     condition = train_case[2], criterion = self.criterion, 
                                                     Training = True, decoding_word = train_case[1])
-                    print(loss)
+                    
                     total_loss = self.loss_sum(loss, mu, logvar)                                
                     (total_loss).backward()
                     overall_loss += total_loss
@@ -91,7 +91,6 @@ class Autoencoder:
                     Encoder_optimizer.step()
                     Decoder_optimizer.step()
 
-            print(predict_word)        
             total_len = (len(self.get_train_set(0)) + len(self.get_train_set(1)) + len(self.get_train_set(2)) + len(self.get_train_set(3)))
             msg = '# Epoch : {}, Avg_loss = {}'.format(ep, overall_loss/total_len)
             print(msg)
@@ -111,19 +110,21 @@ class Autoencoder:
         for i in range(len(test_set)):
             test_case = test_set[i]
             # encode
-            encoder_output, Encode_hidden, mu, logvar = encoder.DoEncode(self.Encoder, self.hidden_size, 
+            Encoder_output, mu, logvar = encoder.DoEncode(self.Encoder, self.hidden_size, 
                                                         self.cond_embed_size, test_case[0], int(test_case[2]))
             # decode
             predict_word, loss = decoder.DoDecode(self.Decoder, self.hidden_size, self.cond_embed_size, 
-                                            self.output_size, encoder_output, 
+                                            self.output_size, Encoder_output, 
                                             condition = int(test_case[2]), criterion = self.criterion, 
                                             Training = True, decoding_word = test_case[1])
+            print('Given_word : {}'.format(test_case[0]))
             print('Expected_word : {}'.format(test_case[1]))
             print('Predict_word : {}'.format(predict_word))
+            print(' ')
 
             if test_case[1] == predict_word:
                 acc += 1
-        print(' ')
+
         print('Test accuracy : {} %'.format(acc/len(test_set)*100))
 
 

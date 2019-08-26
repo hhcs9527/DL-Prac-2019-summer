@@ -19,10 +19,10 @@ class EncoderRNN(nn.Module):
 
     def forward(self, input, hidden):
         output, hidden = self.gru(input, hidden)
-        hidden = self.linear(hidden)
+        #hidden = self.linear(hidden)
         # Reparprint Part -> for Dncoder
-        mu = self.linearmu(output)
-        logvar = self.linearlogvar(output)
+        mu = self.linearmu(hidden)
+        logvar = self.linearlogvar(hidden)
         std = torch.exp(0.5*logvar)
         output = mu + torch.randn_like(std)
         return output, hidden, mu, logvar
@@ -46,12 +46,12 @@ def DoEncode(Encoder, hidden_size, cond_embed_size, encoding_word, condition):
 
 
 # encoder output has already been reparameterize
-        encoder_output, Encode_hidden, mu, logvar = Encoder(Encode_input, Encoder_hidden)
+        Encoder_output, Encode_hidden, mu, logvar = Encoder(Encode_input, Encoder_hidden)
         Encoder_hidden = Encode_hidden
     
-    return encoder_output, Encode_hidden, mu, logvar
+    return Encoder_output, mu, logvar
 
 
 if __name__ == '__main__':
-    encoder_output, Encode_hidden, mu, logvar = DoEncode(256, 10, 'apple', 2)
-    print(encoder_output)
+    Encoder_output, Encode_hidden, mu, logvar = DoEncode(256, 10, 'apple', 2)
+    print(Encoder_output)
