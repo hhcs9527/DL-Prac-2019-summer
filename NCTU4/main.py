@@ -1,23 +1,40 @@
+# where the file should be 
+# /home/viplab/Desktop/Huang/DL-Prac-2019-summer/NCTU4_new
 from model import *
 from trainer import Trainer
 from test import test
+import torch
+import plot
 
-fe = FrontEnd()
-d = D()
-q = Q()
-g = G()
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+fe = FrontEnd().to(device)
+d = D().to(device)
+q = Q().to(device)
+g = G().to(device)
 
 train = False
-train = True
+#train = True
 
+# Training 
 if train == True:
   for i in [fe, d, q, g]:
-    i.cuda()
     i.apply(weights_init)
 
-  trainer = Trainer(g, fe, d, q)
-  trainer.train()
+  trainer = Trainer(g, fe, d, q, 10)
+  D_L ,G_L = trainer.train()
+  D_L = [D_L[i].cpu() for i in range(len(D_L))]
 
+  G_L = [G_L[i].cpu() for i in range(len(G_L))]
+  #plot.PlotComp(len(D_L), D_L ,G_L)
+
+
+# Testing 
 else:
-  gotest = test(g, fe, d, q)
-  gotest.testing()
+  g.load_state_dict(torch.load('G1.pt'))
+  gotest = test(g)
+
+  for produce in range(10):
+    gotest.testing(produce)
+
+  print('Testing is done !!')
+  torch.cuda.empty_cache()

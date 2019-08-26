@@ -1,26 +1,41 @@
 from trainer import Trainer
 from model import *
 import torch 
+import numpy as np
+import math
+from torchvision.utils import save_image
+from torch.autograd import Variable
+import fuction as f
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class test:
-    def __init__(self, G, FE, D, Q):
-        self.FE = FE.apply(weights_init)
-        self.G = self.load_w(G,'G')
-        self.D = self.load_w(D,'D')
-        self.Q = self.load_w(Q,'Q')
+    def __init__(self, G):
+        self.G = G
         self.batch_size = 100
 
-    def load_w(self, model, name):
-        return model.load_state_dict(torch.load(name + '.pt'))
+
+    def change_num(self, produce):
+        #dic = {'0':8, '1':1, '2':4, '3':5, '4':3, '5':6, '6':2, '7':9, '8':0, '9':7}
+        dic = [8, 1, 4, 5, 3, 6, 2, 9, 0, 7]
+        for i in range(len(dic)):
+            if dic[i] == produce:
+                break
+        return i
 
 
-    def testing(self):
-        real_x, label, dis_c, con_c, noise = Trainer.setup()
-        z, idx = Trainer._noise_sample(dis_c, con_c, noise, self.batch_size)
-        print(z)
-        print(idx)
+    def testing(self, produce):
+        word = 'training'
+        word = 'testing'
+        #z = f.fix_noise_cat(self.batch_size, word, produce)
+        z = f.fixedNoise( number = produce).to(device)
+        #print(z)
+        name = './pic/'+ '#produce_' + str(produce)  +'.png'
+        img = self.G(z)
+        #prod = int(self.change_num(produce))
+        # img.data[produce][:] [produce * 10 : produce * 10+10]
+        #print(img.size())
+        save_image(img.data, name, nrow = 10)
+        return z
 
-    def print(self):
-        print('hello')
 
 

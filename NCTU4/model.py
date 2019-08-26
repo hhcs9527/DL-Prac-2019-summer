@@ -1,6 +1,6 @@
 import torch.nn as nn
-
-Change = True
+Change = False
+#Change = True
 class FrontEnd(nn.Module):
   ''' front end part of discriminator and Q'''
 
@@ -10,13 +10,13 @@ class FrontEnd(nn.Module):
     self.main = nn.Sequential(
 
       nn.Conv2d(1, 64, 4, 2, 1),
-      #nn.LeakyReLU(0.1, inplace=True),
+      nn.LeakyReLU(0.1, inplace=True),
       nn.Conv2d(64, 128, 4, 2, 1, bias=False),
       nn.BatchNorm2d(128),
-      #nn.LeakyReLU(0.1, inplace=True),
+      nn.LeakyReLU(0.1, inplace=True),
       nn.Conv2d(128, 1024, 7, bias=False),
       nn.BatchNorm2d(1024),
-      #nn.LeakyReLU(0.1, inplace=True),
+      nn.LeakyReLU(0.1, inplace=True),
     )
 
   def forward(self, x):
@@ -37,21 +37,11 @@ class D(nn.Module):
     else:
       self.main = nn.Sequential(
         # input 100 1024, 1, 1
-        nn.Conv2d(1024, 64, 1, 4, 1, bias=False),
-        nn.ReLU(),#nn.LeakyReLU(0.2, inplace=True),
-        # state size. 100, 64, 1, 1
-        nn.Conv2d(64, 64 * 2, 1, 4, 1, bias=False),
+        nn.Conv2d(1024, 64*2, 1),
         nn.BatchNorm2d(64 * 2),
-        #nn.ReLU(),#nn.LeakyReLU(0.2, inplace=True),
+        nn.LeakyReLU(0.2),
         # state size. 100, 128, 1, 1
-        nn.Conv2d(64 * 2, 64 * 4, 1, 4, 1, bias=False),
-        nn.BatchNorm2d(64 * 4),
-        #nn.ReLU(),##nn.LeakyReLU(0.2, inplace=True),
-        # state size. 100, 256, 1, 1
-        nn.Conv2d(64 * 4, 64 * 8, 1, 4, 1, bias=False),
-        nn.BatchNorm2d(64 * 8),
-        # state size. 100, 512, 1, 1
-        nn.Conv2d(64 * 8, 1, 1, 4, 1, bias=False),
+        nn.Conv2d(64*2, 1, 1),
         nn.Sigmoid()
         # state size. 100, 1, 1, 1
       )
@@ -101,7 +91,7 @@ class G(nn.Module):
       nn.ReLU(True),
       # state size. 100, 1024, 1, 1
       nn.ConvTranspose2d(1024, 128, 7, 1, bias=False),
-      #nn.BatchNorm2d(128),
+      nn.BatchNorm2d(128),
       nn.ReLU(True),
       # state size. 100, 128, 7, 7
       nn.ConvTranspose2d(128, 64, 4, 2, 1, bias=False),
@@ -118,25 +108,28 @@ class G(nn.Module):
     else:
       self.main = nn.Sequential(
         # state size. 100, 74, 1, 1
-        nn.ConvTranspose2d(74, 64 * 8, 3, 2, 1, bias=False),
-        #nn.BatchNorm2d(64 * 8),
-        nn.ReLU(True),
+        nn.ConvTranspose2d(74, 64 * 8, 1, 2, bias=False),
+        nn.BatchNorm2d(64 * 8),
+        #nn.ReLU(True),
+        nn.LeakyReLU(0.2),
         # state size. 100, 512, 1, 1
-        nn.ConvTranspose2d(64 * 8, 64 * 4, 4, 2, 1, bias=False),
-        #nn.BatchNorm2d(64 * 4),
-        nn.ReLU(True),
+        nn.ConvTranspose2d(64*8, 64 * 4, 2, 2,bias=False),
+        nn.BatchNorm2d(64 * 4),
+        #nn.ReLU(True),
+        nn.LeakyReLU(0.2),
         # state size. 100, 256, 2, 2
-        nn.ConvTranspose2d(64 * 4, 64 * 2, 8, 1, 1, bias=False),
-        #nn.BatchNorm2d(64 * 2),
-        nn.ReLU(True),
+        nn.ConvTranspose2d(64 * 4, 64 * 2, 6, 3, 1,bias=False),
+        nn.BatchNorm2d(64 * 2),
+        #nn.ReLU(True),
+        nn.LeakyReLU(0.2),
         # state size. 100, 128, 7, 7
         nn.ConvTranspose2d(64 * 2, 64, 4, 2, 1, bias=False),
-        #nn.BatchNorm2d(64),
-        nn.ReLU(True),
+        nn.BatchNorm2d(64),
+        #nn.ReLU(True),
+        nn.LeakyReLU(0.2),
         # state size. 100, 64, 14, 14
         nn.ConvTranspose2d(64, 1, 4, 2, 1, bias=False),
-        #nn.Sigmoid()
-        #nn.Tanh()
+        nn.Sigmoid()
         # state size. (1) x 28 x 28 -> generate a grey scale picture
       )
   ######
