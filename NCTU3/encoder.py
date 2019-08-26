@@ -28,12 +28,11 @@ class EncoderRNN(nn.Module):
         return output, hidden, mu, logvar
 
     def initHidden(self):
-        return torch.zeros(1, 1, self.hidden_size - self.cond_embed_size, device=device)
+        return torch.zeros(1, 1, self.hidden_size - self.cond_embed_size, device = device)
 
 
-def DoEncode(hidden_size, cond_embed_size, encoding_word, condition):
+def DoEncode(Encoder, hidden_size, cond_embed_size, encoding_word, condition):
 # initalize encoder & concate hidden
-    Encoder = EncoderRNN(hidden_size, cond_embed_size)
     C2D = Char2Dict(hidden_size, cond_embed_size)
     encode_word = C2D.Word2Tensor(encoding_word)
 
@@ -42,7 +41,9 @@ def DoEncode(hidden_size, cond_embed_size, encoding_word, condition):
         if i == 0:
             Encoder_hidden = torch.cat((Encoder.initHidden(), C2D.embed_cond(condition)), dim = 2)
 
-        Encode_input = C2D.embed_char(encode_word[i], 'encode')
+        Encode_input = C2D.embed_char(encode_word[i], 'encode') # before embed, must be in cpu
+
+
 
 # encoder output has already been reparameterize
         encoder_output, Encode_hidden, mu, logvar = Encoder(Encode_input, Encoder_hidden)
@@ -52,4 +53,5 @@ def DoEncode(hidden_size, cond_embed_size, encoding_word, condition):
 
 
 if __name__ == '__main__':
-    DoEncode(256, 10, 'apple', 2)
+    encoder_output, Encode_hidden, mu, logvar = DoEncode(256, 10, 'apple', 2)
+    print(encoder_output)

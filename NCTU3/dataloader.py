@@ -7,7 +7,7 @@ class Data:
         sepline =  []
         valid_line = []
         for i in range(len(line)):
-            if (line[i] not in sepline or line[i].isdigit()):
+            if (line[i] not in sepline or line[i].isdigit()) and i < 4:
                 sepline.append(line[i])
                 valid_line.append(line[i])
         return valid_line
@@ -19,10 +19,11 @@ class Data:
             for line in iter(f):
                 line = line.split( )
                 valid_line = self.find_valid(line)
+
                 # valid tense change
                 for i in range(len(valid_line)):
-                    for j in range(len(valid_line)):
-                        change_tense = [line[i], line[j],j]
+                    #for j in range(len(valid_line)):
+                        change_tense = [line[i], line[i],i]
                         load_data.append(change_tense)
         return load_data
 

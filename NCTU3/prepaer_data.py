@@ -37,7 +37,7 @@ class Char2Dict:
         #print(word)
         index = [self.word2index[char] for char in word]
         index.append(EOS_token)
-        return torch.tensor(index, dtype = torch.long, device = device).view(-1, 1)
+        return torch.tensor(index, dtype = torch.long).view(-1, 1)
 
 
 # Embedding char to vector / condition to vector
@@ -47,13 +47,13 @@ class Char2Dict:
 
     def embed_char(self, char, encode):
         if encode == 'encode':
-            return self.embedding(char, self.input_size, self.hidden_size).view(1, 1, -1)
+            return self.embedding(char, self.input_size, self.hidden_size).view(1, 1, -1).to(device)
         else:
-            return self.embedding(char, self.input_size, self.hidden_size + self.cond_embed_size).view(1, 1, -1)
+            return self.embedding(char, self.input_size, self.hidden_size + self.cond_embed_size).view(1, 1, -1).to(device)
 
     def embed_cond(self, condition):
         cond = torch.tensor(condition, dtype = torch.long)
-        return self.embedding(cond, 4, self.cond_embed_size).view(1, 1, -1)
+        return self.embedding(cond, 4, self.cond_embed_size).view(1, 1, -1).to(device)
 
 
 # Return word
@@ -67,4 +67,4 @@ if __name__ == '__main__':
     word = 'sos'
     ind = a.Word2Tensor(word)
     print(ind)
-    #print(a.embed_char(ind[3]))
+ 

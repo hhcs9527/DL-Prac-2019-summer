@@ -33,10 +33,9 @@ class DecoderRNN(nn.Module):
         return torch.zeros(1, 1, self.hidden_size , device = device)
 
 
-def DoDecode(hidden_size, cond_embed_size, output_size, 
+def DoDecode(Decoder, hidden_size, cond_embed_size, output_size, 
             encoder_output, condition, criterion, Training, decoding_word):
 # initialize decoder
-    Decoder = DecoderRNN(hidden_size + cond_embed_size, output_size)
     C2D = Char2Dict(hidden_size, cond_embed_size)
     decode_word = C2D.Word2Tensor(decoding_word)
 
@@ -51,22 +50,22 @@ def DoDecode(hidden_size, cond_embed_size, output_size,
             if i == 0:
                 Decoder_hidden = Decoder.initHidden()
                 Decoder_hidden.data.copy_(torch.cat((encoder_output, C2D.embed_cond(condition)), dim = 2))
-                Decoder_input = C2D.embed_char(torch.tensor(SOS_token, dtype = torch.long, device = device), 'decode')
+                Decoder_input = C2D.embed_char(torch.tensor(SOS_token, dtype = torch.long), 'decode')
 
             Decoder_output, Decode_hidden, Decoder_predict = Decoder(Decoder_input, Decoder_hidden) 
             Decoder_hidden = Decode_hidden
             
             if TeacherForcing:
-                Decoder_input = C2D.embed_char(torch.tensor(decode_word[i], dtype = torch.long, device = device), 'decode')
+                Decoder_input = C2D.embed_char(decode_word[i], 'decode')
             else:
                 Decoder_input = Decoder_output
             
-            loss += criterion(Decoder_predict, decode_word[i])
+            loss += criterion(Decoder_predict, decode_word[i].to(device))
             predict_word += C2D.return_word(Decoder_output)
 
             if decode_word[i+1].item() == EOS_token:
                 break
-    return predict_word
+    return predict_word, loss
 # Testing
     #else:
         #while predict != EOS_token...
