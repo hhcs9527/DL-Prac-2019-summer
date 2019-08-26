@@ -91,7 +91,7 @@ def train(input_tensor, target_tensor,encoder, decoder, encoder_optimizer, decod
         use_teacher_forcing =  True 
     else:
         use_teacher_forcing =  False
-
+        
     embed_decoder_input = embed(decoder_input, vocab_size, hidden_size + 10)
     decoder_output, decoder_hidden, decoder_predict = decoder(embed_decoder_input, decoder_hidden)
 
