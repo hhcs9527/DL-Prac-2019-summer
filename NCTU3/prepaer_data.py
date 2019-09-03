@@ -45,11 +45,8 @@ class Char2Dict:
         embed = nn.Embedding(input_size, output_size)
         return embed(char).view(1, 1, -1)
 
-    def embed_char(self, char, encode):
-        if encode == 'encode':
-            return self.embedding(char, self.input_size, self.hidden_size).view(1, 1, -1).to(device)
-        else:
-            return self.embedding(char, self.input_size, self.hidden_size + self.cond_embed_size).view(1, 1, -1).to(device)
+    def embed_char(self, char):
+        return self.embedding(char, self.input_size, self.hidden_size).view(1, 1, -1).to(device)
 
     def embed_cond(self, condition):
         cond = torch.tensor(condition, dtype = torch.long)
@@ -62,7 +59,6 @@ class Char2Dict:
 
 
 if __name__ == '__main__':
-    
     a = Char2Dict(256, 10)
     word = 'sos'
     ind = a.Word2Tensor(word)

@@ -7,6 +7,7 @@ from prepaer_data import Char2Dict
 from encoder import EncoderRNN
 from decoder import DecoderRNN 
 from dataloader import Data
+from CVAEmodel import *
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -22,25 +23,31 @@ class Autoencoder:
         self.epoch = epoch
         self.learning_rate = lr
         
+        
 # initialize using class
         self.C2D = Char2Dict(hidden_size, cond_embed_size)
         self.DataLoader = Data(target_path)
         self.Encoder = EncoderRNN(hidden_size, cond_embed_size).to(device)
-        self.Decoder = DecoderRNN(hidden_size + cond_embed_size, output_size).to(device)
+        self.Decoder = DecoderRNN(hidden_size, output_size).to(device)
+        self.CVAE = CVAE(encoder = self.Encoder, decoder = self.Decoder, 
+                            hidden_size = self.hidden_size, cond_embed_size = self.cond_embed_size, 
+                            C2D = self.C2D, Train = self.train_or_not)
 
 
-    def loss_sum(self, loss, mu, logvar):
-        KLD = -0.5 * torch.sum(1 + 2*logvar - mu.pow(2) - logvar.exp() * logvar.exp())
+
+    def loss_sum(self, loss, Encoder_output):
+        mu = self.CVAE.linearmu(Encoder_output.cpu()).to(device)
+        logvar = self.CVAE.linearlogvar(Encoder_output.cpu()).to(device)
+        KLD = (-0.5) * torch.sum(1 + 2*logvar - mu.pow(2) - logvar.exp().pow(2))
         return loss + KLD
   
 
 
 # Setup variable
     def optimizer_setup(self):
-        encoder_optimizer = optim.SGD(self.Encoder.parameters(), lr = self.learning_rate)
-        decoder_optimizer = optim.SGD(self.Decoder.parameters(), lr = self.learning_rate)
+        CVAE_optimizer = optim.SGD(self.Decoder.parameters(), lr = self.learning_rate, momentum = 0.9)
 
-        return encoder_optimizer, decoder_optimizer 
+        return CVAE_optimizer
 
 
     def get_train_set(self, c):
@@ -58,9 +65,10 @@ class Autoencoder:
 
 
 
-# Training here
+# Training 
     def train(self):
-        Encoder_optimizer, Decoder_optimizer  = self.optimizer_setup()
+        CVAE_optimizer  = self.optimizer_setup()
+        self.CVAE.apply(init_weights)
         for ep in range(self.epoch):
             overall_loss = 0
         # Training with different tense
@@ -68,61 +76,47 @@ class Autoencoder:
                 data = self.get_train_set(c)
                 for i in range(len(data)):
 
-                    train_case = data[i]
-                    Encoder_optimizer.zero_grad()
-                    Decoder_optimizer.zero_grad()
-                    self.Encoder.train()
-                    self.Decoder.train()
+                    CVAE_case = data[i]
+                    CVAE_optimizer.zero_grad()
+                    self.CVAE.train()
 
-                    # encode
-                    Encoder_output, mu, logvar = encoder.DoEncode(self.Encoder, self.hidden_size, 
-                                                                self.cond_embed_size, train_case[0], train_case[2])
+                    # encode & decode
+                    predict_word, decoded_word, pred_word, Encoder_output = self.CVAE(CVAE_case)
 
-                    # decode
-                    predict_word, loss = decoder.DoDecode(self.Decoder, self.hidden_size, self.cond_embed_size, 
-                                                    self.output_size, Encoder_output, 
-                                                    condition = train_case[2], criterion = self.criterion, 
-                                                    Training = True, decoding_word = train_case[1])
-                    
-                    total_loss = self.loss_sum(loss, mu, logvar)                                
+                    loss = self.criterion(pred_word, decoded_word)
+                    total_loss = self.loss_sum(loss, Encoder_output)                                
                     (total_loss).backward()
                     overall_loss += total_loss
 
-                    Encoder_optimizer.step()
-                    Decoder_optimizer.step()
+                    CVAE_optimizer.step()
 
             total_len = (len(self.get_train_set(0)) + len(self.get_train_set(1)) + len(self.get_train_set(2)) + len(self.get_train_set(3)))
-            msg = '# Epoch : {}, Avg_loss = {}'.format(ep, overall_loss/total_len)
+            msg = '# Epoch : {}, Avg_loss = {}'.format(ep+1, overall_loss/total_len)
             print(msg)
 
-            torch.save(self.Encoder.state_dict(), 'Encoder.pt')
-            torch.save(self.Decoder.state_dict(), 'Decoder.pt')
+            torch.save(self.CVAE.state_dict(), 'CVAE.pt')
+            print('we save model !! ')
+
 
 
 
     def test(self):
-        self.Encoder.load_state_dict(torch.load('Encoder.pt'))
-        self.Decoder.load_state_dict(torch.load('Decoder.pt'))
-        self.Encoder.eval()
-        self.Decoder.eval()
+        self.CVAE.load_state_dict(torch.load('CVAE.pt'))
+        self.CVAE.eval()
+        print('hello')
         acc = 0
+
         test_set = self.DataLoader.read_test_file()
         for i in range(len(test_set)):
-            test_case = test_set[i]
-            # encode
-            Encoder_output, mu, logvar = encoder.DoEncode(self.Encoder, self.hidden_size, 
-                                                        self.cond_embed_size, test_case[0], int(test_case[2]))
-            # decode
-            predict_word, loss = decoder.DoDecode(self.Decoder, self.hidden_size, self.cond_embed_size, 
-                                            self.output_size, Encoder_output, 
-                                            condition = int(test_case[2]), criterion = self.criterion, 
-                                            Training = True, decoding_word = test_case[1])
-            print('Given_word : {}'.format(test_case[0]))
-            print('Expected_word : {}'.format(test_case[1]))
+            CVAE_case = test_set[i]
+            predict_word, decoded_word, pred_word, Encoder_output = self.CVAE(CVAE_case)
+
+            print('Given_word : {}'.format(CVAE_case[0]))
+            print('Expected_word : {}'.format(CVAE_case[1]))
             print('Predict_word : {}'.format(predict_word))
             print(' ')
 
-            if test_case[1] == predict_word:
+            if CVAE_case[1] == predict_word:
                 acc += 1
 
         print('Test accuracy : {} %'.format(acc/len(test_set)*100))

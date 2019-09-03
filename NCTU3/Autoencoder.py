@@ -15,7 +15,7 @@ def main(args):
 
 if __name__ == "__main__":
     Train = True
-    #Train = False
+    Train = False
     parser = argparse.ArgumentParser()
     # -- reprsent the var, no - -> you must input something, if try to specific refer use -o/-oo(define my self)
     # directly read, no need typing
@@ -31,7 +31,7 @@ if __name__ == "__main__":
     else:
         parser.add_argument('--target_path', default = './lab3/test_data.txt', type=str)
     parser.add_argument('--lr', default = 0.001, type=float)
-    parser.add_argument('--epoch',default = 10000, type=int)
+    parser.add_argument('--epoch',default = 100, type=int)
     parser.add_argument('--train_or_not', default = True, type=int)
     parser.add_argument('--hidden_size', default = 256, type=int)
     parser.add_argument('--cond_embed_size', default = 10, type=int)

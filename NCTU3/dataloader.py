@@ -22,8 +22,9 @@ class Data:
 
                 # valid tense change
                 for i in range(len(valid_line)):
-                    for j in range(len(valid_line)):
-                        change_tense = [line[i], line[j], j]
+                    #for j in range(len(valid_line)):
+                        #change_tense = [line[i], line[j], j]
+                        change_tense = [line[i], line[i], i]
                         load_data.append(change_tense)
         return load_data
 
@@ -60,4 +61,5 @@ class Data:
 if __name__ == '__main__':
     a = Data('./lab3/train.txt')
     present, third_person, present_progressive, simple_past = a.seperate_tense()
+
 
