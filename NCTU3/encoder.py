@@ -5,13 +5,13 @@ from prepaer_data import Char2Dict
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class EncoderRNN(nn.Module):
-    def __init__(self, hidden_size, cond_embed_size):
+    def __init__(self, input_embed_size, hidden_size, cond_embed_size):
         super(EncoderRNN, self).__init__()
 
         self.hidden_size = hidden_size
         self.cond_embed_size = cond_embed_size
 
-        self.gru = nn.GRU(hidden_size, hidden_size)
+        self.gru = nn.GRU(input_embed_size, hidden_size)
         self.linear = nn.Linear(hidden_size, hidden_size) 
         self.linearmu = nn.Linear(hidden_size, hidden_size) 
         self.linearlogvar = nn.Linear(hidden_size, hidden_size) 

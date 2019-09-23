@@ -11,7 +11,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class test:
     def __init__(self, G):
         self.G = G
-        self.batch_size = 100
+        self.batch_size = 10
 
 
     def change_num(self, produce):
@@ -26,8 +26,8 @@ class test:
     def testing(self, produce):
         word = 'training'
         word = 'testing'
-        #z = f.fix_noise_cat(self.batch_size, word, produce)
-        z = f.fixedNoise( number = produce).to(device)
+        z = f.fix_noise_cat(self.batch_size, word, produce)
+        #z = f.fixedNoise( number = produce).to(device)
         #print(z)
         name = './pic/'+ '#produce_' + str(produce)  +'.png'
         img = self.G(z)

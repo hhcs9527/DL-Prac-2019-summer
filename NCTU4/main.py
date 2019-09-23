@@ -7,20 +7,21 @@ import torch
 import plot
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-fe = FrontEnd().to(device)
-d = D().to(device)
-q = Q().to(device)
-g = G().to(device)
+
+d = Discriminator().to(device)
+dh = D_head().to(device)
+qh = Q_head().to(device)
+g = Generator().to(device)
 
 train = False
 #train = True
 
 # Training 
 if train == True:
-  for i in [fe, d, q, g]:
+  for i in [d, dh, qh, g]:
     i.apply(weights_init)
 
-  trainer = Trainer(g, fe, d, q, 10)
+  trainer = Trainer(d, dh, qh, g, 10)
   D_L ,G_L = trainer.train()
   D_L = [D_L[i].cpu() for i in range(len(D_L))]
 
@@ -30,7 +31,7 @@ if train == True:
 
 # Testing 
 else:
-  g.load_state_dict(torch.load('G1.pt'))
+  g.load_state_dict(torch.load('G.pt'))
   gotest = test(g)
 
   for produce in range(10):

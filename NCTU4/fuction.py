@@ -22,16 +22,24 @@ def setup(batch):
   return real_x, label, dis_c, con_c, noise
 
 
+
+
 # Return concated noise, for generating picture
 def fix_noise_cat(batch, instruction, produce):
-    c = torch.rand(batch, 2).to(device)* 2 - 1
+    c = (torch.rand(batch, 2).to(device)* 2 - 1).to(device)
 
     if instruction == 'training':
         idx = np.arange(10).repeat(batch/10)
+        #idx = [produce] * batch
     else:
-        idx = [produce] * batch
+        idx = [produce] * batch            # doesn't work
+        #idx = [9]*batch      #-> work
+        #idx = np.arange(10)  
+        
+
     one_hot = np.zeros((batch, 10))
     one_hot[range(batch), idx] = 1
+
 
     fix_noise = torch.randn(batch, 62).to(device) 
 
@@ -40,8 +48,8 @@ def fix_noise_cat(batch, instruction, produce):
     noise.data.copy_(fix_noise)
     dis_c.data.copy_(torch.Tensor(one_hot))
     con_c.data.copy_(c)
-
     return torch.cat([noise, dis_c, con_c], 1).view(-1, 74, 1, 1)
+
 
 
 # Return the noise sample for the training part
@@ -61,6 +69,7 @@ def _noise_sample(dis_c, con_c, noise, batch):
     z = torch.cat([noise, dis_c, con_c], 1).view(-1, 74, 1, 1)
 
     return z, idx
+
 
 
 def fixedNoise(count = 100, number = None):
@@ -128,3 +137,16 @@ def changeIndex(number):
       return 1
   elif number == 9:
       return 9
+
+if __name__ == '__main__' :
+    batch = 100
+    instruction = 'trainin'
+    produce = 5
+
+    a =  fix_noise_cat(batch, instruction, produce)
+    print(a[0])
+    print(a[1])
+    #tmp = a[0]
+    #for i in range(100-1):
+    #    diff = a[i+1] - a[i]
+    #    print(diff)

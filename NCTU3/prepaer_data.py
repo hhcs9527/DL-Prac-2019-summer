@@ -7,7 +7,7 @@ EOS_token = 1
 # change character 2 dic
 class Char2Dict:
 # C2D
-    def __init__(self, hidden_size, cond_embed_size):
+    def __init__(self, cond_embed_size):
         self.char_list = [chr(i) for i in range(97, 123)]
         self.word2index = {}
         self.word2count = {}
@@ -16,10 +16,8 @@ class Char2Dict:
 
         for word in self.char_list:
             self.addWord(word)
-
-        self.hidden_size = hidden_size
+            
         self.cond_embed_size = cond_embed_size
-        self.input_size = self.n_words
 
     
     def addWord(self, word):
@@ -38,19 +36,6 @@ class Char2Dict:
         index = [self.word2index[char] for char in word]
         index.append(EOS_token)
         return torch.tensor(index, dtype = torch.long).view(-1, 1)
-
-
-# Embedding char to vector / condition to vector
-    def embedding(self, char, input_size, output_size):
-        embed = nn.Embedding(input_size, output_size)
-        return embed(char).view(1, 1, -1)
-
-    def embed_char(self, char):
-        return self.embedding(char, self.input_size, self.hidden_size).view(1, 1, -1).to(device)
-
-    def embed_cond(self, condition):
-        cond = torch.tensor(condition, dtype = torch.long)
-        return self.embedding(cond, 4, self.cond_embed_size).view(1, 1, -1).to(device)
 
 
 # Return word
