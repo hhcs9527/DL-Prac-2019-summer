@@ -41,7 +41,7 @@ if __name__ == "__main__":
         parser.add_argument('--target_path', default = './lab3/test_data.txt', type=str)
         parser.add_argument('--train_or_not', default = False, type=int)
 
-    parser.add_argument('--lr', default = 0.0001, type=float)
+    parser.add_argument('--lr', default = 0.001, type=float)
     parser.add_argument('--epoch',default = 300, type=int)
     parser.add_argument('--hidden_size', default = 256, type=int)
     parser.add_argument('--cond_embed_size', default = 8, type=int)

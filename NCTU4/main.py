@@ -21,7 +21,7 @@ if train == True:
   for i in [d, dh, qh, g]:
     i.apply(weights_init)
 
-  trainer = Trainer(d, dh, qh, g, 10)
+  trainer = Trainer(d, dh, qh, g, 100)
   D_L ,G_L = trainer.train()
   D_L = [D_L[i].cpu() for i in range(len(D_L))]
 

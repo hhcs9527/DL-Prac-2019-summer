@@ -58,6 +58,7 @@ class Data:
         
         return  present, third_person, present_progressive, simple_past
 
+
 if __name__ == '__main__':
     a = Data('./lab3/train.txt')
     present, third_person, present_progressive, simple_past = a.seperate_tense()

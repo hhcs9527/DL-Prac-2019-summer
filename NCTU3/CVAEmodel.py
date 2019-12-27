@@ -36,6 +36,7 @@ class CVAE(nn.Module):
         self.cond_embedding = nn.Embedding(4, self.cond_embed_size)
         self.linear = nn.Linear(self.hidden_size + self.cond_embed_size, self.hidden_size)
 
+
     # specific for the decoder
     def get_linear(self, Encoder_output, condition):
         Encoder_output = torch.cat((Encoder_output, self.embed_cond(condition)), dim = 2)
@@ -122,11 +123,15 @@ class CVAE(nn.Module):
 
             return predict_word    
             
+            
     def Decode_test(self, Encoder_output, cond):
         predict_word = ""
     # sequence to sequence part for decoder
         Decoder_hidden = self.get_linear(self.reparameterize(Encoder_output), int(cond)).to(self.device)
         Decoder_input = self.embed_char(torch.tensor(self.SOS_token, dtype = torch.long)).to(self.device)
+
+        print(Decoder_input.size())
+        print(Decoder_hidden.size())
 
         Decoder_output, Decoder_hidden, Decoder_predict = self.Decoder(Decoder_input, Decoder_hidden) 
         len = 0

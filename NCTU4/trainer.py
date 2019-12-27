@@ -136,8 +136,8 @@ class Trainer:
 
       torch.save(self.G.state_dict(), self.get_path('G'))
 
-      D_L.append(D_record_loss/len(dataset))
-      G_L.append(G_record_loss/len(dataset))
+      #D_L.append(D_record_loss/len(dataset))
+      #G_L.append(G_record_loss/len(dataset))
 
     torch.cuda.empty_cache()
     return  D_L ,G_L
