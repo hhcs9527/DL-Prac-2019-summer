@@ -21,7 +21,7 @@ if train == True:
   for i in [d, dh, qh, g]:
     i.apply(weights_init)
 
-  trainer = Trainer(d, dh, qh, g, 100)
+  trainer = Trainer(d, dh, qh, g, 60)
   D_L ,G_L = trainer.train()
   D_L = [D_L[i].cpu() for i in range(len(D_L))]
 
@@ -32,10 +32,11 @@ if train == True:
 # Testing 
 else:
   g.load_state_dict(torch.load('G.pt'))
+  g.eval()
   gotest = test(g)
 
   for produce in range(10):
     gotest.testing(produce)
 
   print('Testing is done !!')
-  torch.cuda.empty_cache()
+torch.cuda.empty_cache()

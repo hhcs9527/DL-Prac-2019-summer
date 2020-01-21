@@ -48,23 +48,29 @@ def fix_noise_cat(batch, instruction, produce):
     noise.data.copy_(fix_noise)
     dis_c.data.copy_(torch.Tensor(one_hot))
     con_c.data.copy_(c)
+
     return torch.cat([noise, dis_c, con_c], 1).view(-1, 74, 1, 1)
 
 
 
 # Return the noise sample for the training part
-def _noise_sample(dis_c, con_c, noise, batch):
+def _noise_sample(dis_c, con_c, noise, batch, data_label):
 
-    idx = np.random.randint(10, size = batch)
+    real_x, label, dis_c, con_c, noise = setup(batch)
+
+    idx = data_label
     c = np.zeros((batch, 10))
     c[range(batch),idx] = 1.0
 
     constant = (torch.rand(batch, 2).to(device)* 2 - 1).to(device) 
+    
+    fix_noise = torch.randn(batch, 62).to(device)
 
+    noise.data.copy_(fix_noise)
     dis_c.data.copy_(torch.Tensor(c))
     con_c.data.copy_(constant)
 
-    noise = torch.randn(batch, 62).to(device)
+    
 
     z = torch.cat([noise, dis_c, con_c], 1).view(-1, 74, 1, 1)
 

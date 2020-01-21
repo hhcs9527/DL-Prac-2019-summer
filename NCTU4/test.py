@@ -11,8 +11,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class test:
     def __init__(self, G):
         self.G = G
-        self.batch_size = 10
-
+        self.batch_size = 100
 
     def change_num(self, produce):
         #dic = {'0':8, '1':1, '2':4, '3':5, '4':3, '5':6, '6':2, '7':9, '8':0, '9':7}

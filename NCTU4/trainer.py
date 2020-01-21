@@ -58,12 +58,12 @@ class Trainer:
       G_record_loss = 0
       D_record_loss = 0
 
-      for num_iters, batch_data in enumerate(dataloader, 0):
+      for num_iters, batch_data in enumerate(dataloader):
       # Training Discriminater optimizer
         # real part
         self.optimD.zero_grad()
         
-        x, _ = batch_data
+        x, data_label = batch_data
 
         bs = x.size(0)
         real_x.data.resize_(x.size()) 
@@ -83,7 +83,9 @@ class Trainer:
         loss_real.backward()
 
         # fake part
-        z, idx = f._noise_sample(dis_c, con_c, noise, bs)
+#####
+        z, idx = f._noise_sample(dis_c, con_c, noise, bs, data_label)
+#####
         fake_x = self.G(z)
         fe_out2 = self.D(fake_x.detach())
         probs_fake = self.DH(fe_out2)
@@ -129,12 +131,12 @@ class Trainer:
           )
 
 
-      z = f.fix_noise_cat(100, 'training', epoch)
-      x_save = self.G(z)
-      name = './try_ans/'+ '#epoch' + str(epoch+1)  +'.png'
-      save_image(x_save.data, name, nrow=10)
+        z = f.fix_noise_cat(100, 'training', epoch)
+        x_save = self.G(z)
+        name = './try_ans/'+ '#epoch' + str(epoch+1)  +'.png'
+        save_image(x_save.data, name, nrow=10)
 
-      torch.save(self.G.state_dict(), self.get_path('G'))
+        torch.save(self.G.state_dict(), self.get_path('G'))
 
       #D_L.append(D_record_loss/len(dataset))
       #G_L.append(G_record_loss/len(dataset))
