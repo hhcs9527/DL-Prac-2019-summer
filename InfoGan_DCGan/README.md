@@ -11,3 +11,6 @@ Column represents continue variable (c1) (Width) varying from -1 to 1(left to ri
 Row represents categorical variable from K = 0 to K = 9 (top to buttom) to characterize digits.<br />
 Column represents continue variable (c2) (Rotation) varying from -1 to 1(left to right).<br />
 ![c2](./asset/c2.png)
+
+## Training
+Suggest training within 60 epoch, or Discriminator may too strong for Generator to fool it.
